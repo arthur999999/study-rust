@@ -1,14 +1,36 @@
+use std::{net::{TcpListener, TcpStream}, io::Read};
 
-    pub struct Server {
-        addr: String
+pub struct Server {
+    addr: String
+}
+    
+impl Server {
+    pub fn new(addr: String) -> Server {
+        return Server{ addr };
     }
     
-    impl Server {
-        pub fn new(addr: String) -> Server {
-            return Server{ addr };
-        }
-    
-        pub fn run(self){
-            println!("Listening on {}", self.addr)
-        }
+    pub fn run(self){
+       println!("Listening on {}", self.addr);
+
+       let listener = TcpListener::bind(&self.addr).unwrap();
+
+       loop {
+           let res = listener.accept();
+
+           match res {
+                Ok((mut stream, addr))=> {
+                    let mut buffer = [0; 1024];
+                    match stream.read(&mut buffer) {
+                        Ok(_)=>{
+                            let data_recived = String::from_utf8_lossy(&buffer);
+                            println!("Recived data {}", data_recived);
+                        },
+                        Err(e)=> print!("Falied to read connection {}", e),
+                    }
+
+                },
+                Err(e)=> print!("Error ocuuured {}", e)
+           }
+       }
     }
+}
