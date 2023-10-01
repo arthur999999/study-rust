@@ -5,9 +5,12 @@ use method::{Method, MethodError};
 
 use crate::http::method;
 
+use super::query_stirng::QueryString;
+
+#[derive(Debug)]
 pub struct Request<'inBufferStream>{
     path: &'inBufferStream str,
-    query_string: Option<& 'inBufferStream str>,
+    query_string: Option<QueryString<'inBufferStream> >,
     method: super::method::Method
 }
 
@@ -30,11 +33,11 @@ impl <'inBufferStream> TryFrom<&'inBufferStream [u8]> for Request<'inBufferStrea
 
         let method: Method = method.parse()?;
 
-        let mut query_string: Option<&str> =None;
+        let mut query_string =None;
        
 
         if let Some(i) = path.find("?") {
-            query_string = Some(&path[i + 1..]);
+            query_string = Some(QueryString::from(&path[i + 1..]));
             path = &path[..i];
         }
 

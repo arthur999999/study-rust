@@ -27,8 +27,8 @@ impl Server {
                             let data_recived = String::from_utf8_lossy(&buffer);
                             println!("Recived data {}", data_recived);
                             match Request::try_from(&buffer[..]) {
-                                Ok(_)=> {
-
+                                Ok(req)=> {
+                                    println!("Request = {:?}", req)
                                 },
                                 Err(_) =>{} 
                             }
