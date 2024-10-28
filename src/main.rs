@@ -12,7 +12,7 @@ use solana_sdk::{signature::Keypair, signer::Signer};
 use solana_streamer::socket::SocketAddrSpace;
 
 fn main() -> std::io::Result<()> {
-    let socket = UdpSocket::bind("127.0.0.1:0")?;
+    let socket = UdpSocket::bind("127.0.0.1:8000")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
 
     let solana_addr: SocketAddr = "35.203.170.30:8001"
