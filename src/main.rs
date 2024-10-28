@@ -21,7 +21,7 @@ use solana_streamer::socket::SocketAddrSpace;
 //dont work
 
 fn main() -> std::io::Result<()> {
-    let socket = UdpSocket::bind("0.0.0.0:8001")?;
+    let socket = UdpSocket::bind("170.39.119.105:8001")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
 
     let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
