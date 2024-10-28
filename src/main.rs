@@ -36,23 +36,19 @@ fn main() -> std::io::Result<()> {
 
     println!("send message result {:?}", send_message);
 
-    let result_read = read_socket(&socket);
-
-    println!("read result {:?}", result_read);
+    listen_for_gossip_messages(&socket);
 
     Ok(())
 }
 
-fn read_socket(socket: &UdpSocket) -> io::Result<()> {
-    let mut buf = [0; 2000]; // Buffer de 1024 bytes para receber dados
-
-    // Recebe dados de um remetente e armazena no buffer
-    let (amt, src) = socket.recv_from(&mut buf)?;
-    println!("Dados recebidos de {}: {:?}", src, &buf[..amt]);
-
-    // Opcional: Processa os dados recebidos
-    let mensagem = String::from_utf8_lossy(&buf[..amt]);
-    println!("Mensagem: {}", mensagem);
-
-    Ok(())
+fn listen_for_gossip_messages(socket: &UdpSocket) {
+    let mut buf = [0u8; 2000];
+    match socket.recv_from(&mut buf) {
+        Ok((size, _src)) => {
+            println!("message recived {:?}", buf);
+        }
+        Err(e) => {
+            eprintln!("Failed to receive gossip message: {}", e);
+        }
+    }
 }
