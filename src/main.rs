@@ -15,13 +15,14 @@ use solana_sdk::{
     pubkey::Pubkey,
     signature::{Keypair, Signature},
     signer::Signer,
+    timing::timestamp,
 };
 use solana_streamer::socket::SocketAddrSpace;
 
 //dont work
 
 fn main() -> std::io::Result<()> {
-    let socket = UdpSocket::bind("170.39.119.105:8001")?;
+    let socket = UdpSocket::bind("0.0.0.0:8001")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
 
     let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
@@ -32,7 +33,7 @@ fn main() -> std::io::Result<()> {
 
     let keypair = Keypair::new();
 
-    let contact_info = ContactInfo::new_gossip_entry_point(&my_ip);
+    let contact_info = ContactInfo::new(keypair.pubkey(), timestamp(), 0);
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
@@ -112,4 +113,53 @@ pub struct PruneData {
     destination: Pubkey,
     /// Wallclock of the node that generated this message
     wallclock: u64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub struct LegacyContactInfo {
+    id: Pubkey,
+    /// gossip address
+    gossip: SocketAddr,
+    /// address to connect to for replication
+    tvu: SocketAddr,
+    /// TVU over QUIC protocol.
+    tvu_quic: SocketAddr,
+    /// repair service over QUIC protocol.
+    serve_repair_quic: SocketAddr,
+    /// transactions address
+    tpu: SocketAddr,
+    /// address to forward unprocessed transactions to
+    tpu_forwards: SocketAddr,
+    /// address to which to send bank state requests
+    tpu_vote: SocketAddr,
+    /// address to which to send JSON-RPC requests
+    rpc: SocketAddr,
+    /// websocket for JSON-RPC push notifications
+    rpc_pubsub: SocketAddr,
+    /// address to send repair requests to
+    serve_repair: SocketAddr,
+    /// latest wallclock picked
+    wallclock: u64,
+    /// node shred version
+    shred_version: u16,
+}
+
+impl LegacyContactInfo {
+    fn test_contact(ip: SocketAddr) -> Self {
+        LegacyContactInfo {
+            id: Pubkey::default(),
+            gossip: ip,
+            tvu: ip,
+            tvu_quic: ip,
+            serve_repair_quic: ip,
+            tpu: ip,
+            tpu_forwards: ip,
+            tpu_vote: ip,
+            rpc: ip,
+            rpc_pubsub: ip,
+            serve_repair: ip,
+            wallclock: 0,
+            shred_version: 0,
+        }
+    }
 }
