@@ -48,9 +48,8 @@ fn main() -> std::io::Result<()> {
 
     println!("result send {:?}", result_send);
 
-    loop {
-        listen_for_gossip_messages(&socket);
-    }
+    listen_for_gossip_messages(&socket);
+    listen_for_gossip_messages(&socket);
 
     Ok(())
 }
