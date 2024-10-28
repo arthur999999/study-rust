@@ -9,7 +9,7 @@ use solana_gossip::{
     contact_info::{self, ContactInfo},
     crds_gossip_pull::CrdsFilter,
     crds_value::{CrdsData, CrdsValue},
-    ping_pong::{self, Pong},
+    ping_pong::{self, Ping, Pong},
 };
 use solana_sdk::{
     pubkey::Pubkey,
@@ -24,7 +24,7 @@ fn main() -> std::io::Result<()> {
 
     let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "34.83.231.102:8001"
+    let solana_addr: SocketAddr = "35.197.53.105:8001"
         .parse()
         .expect("Failed create socket testnet");
 
@@ -36,7 +36,9 @@ fn main() -> std::io::Result<()> {
 
     let filter = CrdsFilter::default();
 
-    let message = Protocol::PullRequest(filter, value);
+    let ping_message = Ping::new([2_u8; 32], &keypair).expect("failed creat ping");
+
+    let message = Protocol::PingMessage(ping_message);
 
     let serealized = bincode::serialize(&message).expect("Failed bincode");
 
@@ -63,7 +65,7 @@ fn listen_for_gossip_messages(socket: &UdpSocket) {
 
 const GOSSIP_PING_TOKEN_SIZE: usize = 32;
 
-type Ping = ping_pong::Ping<[u8; GOSSIP_PING_TOKEN_SIZE]>;
+type PingType = ping_pong::Ping<[u8; GOSSIP_PING_TOKEN_SIZE]>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Protocol {
@@ -74,7 +76,7 @@ pub enum Protocol {
     // TODO: Remove the redundant outer pubkey here,
     // and use the inner PruneData.pubkey instead.
     PruneMessage(Pubkey, PruneData),
-    PingMessage(Ping),
+    PingMessage(PingType),
     PongMessage(Pong),
     // Update count_packets_received if new variants are added here.
 }
