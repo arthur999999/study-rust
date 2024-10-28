@@ -24,7 +24,7 @@ fn main() -> std::io::Result<()> {
     let socket = UdpSocket::bind("0.0.0.0:8001")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
 
-    // let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
+    let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
     let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
@@ -32,9 +32,9 @@ fn main() -> std::io::Result<()> {
 
     let keypair = Keypair::new();
 
-    // let contact_info = ContactInfo::new_gossip_entry_point(&my_ip);
+    let contact_info = ContactInfo::new_gossip_entry_point(&my_ip);
 
-    // let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
+    let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
     let filter = CrdsFilter::default();
 
@@ -42,28 +42,42 @@ fn main() -> std::io::Result<()> {
 
     let message = Protocol::PingMessage(ping_message);
 
+    // let message = Protocol::PullRequest(filter, value);
+
     let serealized = bincode::serialize(&message).expect("Failed bincode");
 
     let result_send = socket.send_to(&serealized, solana_addr);
 
     println!("result send {:?}", result_send);
 
-    listen_for_gossip_messages(&socket);
-    listen_for_gossip_messages(&socket);
+    let recive_message = listen_for_gossip_messages(&socket);
+
+    match recive_message {
+        Some(message) => {
+            let protocol: Protocol = bincode::deserialize(&message).expect("Failed deserialize");
+
+            println!("Protocol {:?}", protocol);
+        }
+        None => {
+            println!("No message recived");
+        }
+    }
 
     Ok(())
 }
 
-fn listen_for_gossip_messages(socket: &UdpSocket) {
+fn listen_for_gossip_messages(socket: &UdpSocket) -> Option<Vec<u8>> {
     let mut buf = [0u8; 1260];
 
     match socket.recv_from(&mut buf) {
         Ok((size, _src)) => {
             println!("message recived {:?}", buf);
             println!("message size {:?}", size);
+            return Some(buf[..size].to_vec());
         }
         Err(e) => {
             eprintln!("Failed to receive gossip message: {}", e);
+            return None;
         }
     }
 }
