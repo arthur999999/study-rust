@@ -52,7 +52,7 @@ fn main() -> std::io::Result<()> {
 }
 
 fn listen_for_gossip_messages(socket: &UdpSocket) {
-    let mut buf = [0u8; 2000];
+    let mut buf = [0u8; 1260];
     match socket.recv_from(&mut buf) {
         Ok((size, _src)) => {
             println!("message recived {:?}", buf);
@@ -95,48 +95,3 @@ pub struct PruneData {
     /// Wallclock of the node that generated this message
     wallclock: u64,
 }
-
-// use std::error::Error;
-// use std::net::UdpSocket;
-// use std::thread;
-// use std::time::Duration;
-
-// fn main() -> Result<(), Box<dyn Error>> {
-//     // Cria um socket UDP que escuta no IP local e em uma porta específica
-//     let local_socket = UdpSocket::bind("0.0.0.0:8080")?;
-//     println!("Escutando no endereço: {}", local_socket.local_addr()?);
-
-//     // Define o endereço de destino (seu IP) para enviar a mensagem
-//     let dest_addr = "170.39.119.105:8080"; // porta para onde enviar
-
-//     // Mensagem a ser enviada
-//     let message = b"testte";
-
-//     // Envia a mensagem para o endereço de destino
-//     local_socket.send_to(message, dest_addr)?;
-//     println!("Mensagem enviada para {}", dest_addr);
-
-//     // Thread para receber mensagens
-//     thread::spawn(move || {
-//         let mut buf = [0; 1024]; // Buffer para receber dados
-
-//         loop {
-//             // Recebe dados
-//             match local_socket.recv_from(&mut buf) {
-//                 Ok((amt, src)) => {
-//                     let received_msg = String::from_utf8_lossy(&buf[..amt]);
-//                     println!("Recebido de {}: {}", src, received_msg);
-//                 }
-//                 Err(e) => {
-//                     eprintln!("Erro ao receber: {}", e);
-//                     break;
-//                 }
-//             }
-//         }
-//     });
-
-//     // Mantém o programa em execução para permitir receber mensagens
-//     loop {
-//         thread::sleep(Duration::from_secs(1)); // Espera um segundo
-//     }
-// }
