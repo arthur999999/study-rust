@@ -22,7 +22,7 @@ fn main() -> std::io::Result<()> {
     let socket = UdpSocket::bind("0.0.0.0:8001")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
 
-    let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
+    // let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
     let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
@@ -30,9 +30,9 @@ fn main() -> std::io::Result<()> {
 
     let keypair = Keypair::new();
 
-    let contact_info = ContactInfo::new_gossip_entry_point(&my_ip);
+    // let contact_info = ContactInfo::new_gossip_entry_point(&my_ip);
 
-    let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
+    // let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
     let filter = CrdsFilter::default();
 
