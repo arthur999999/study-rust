@@ -18,6 +18,8 @@ use solana_sdk::{
 };
 use solana_streamer::socket::SocketAddrSpace;
 
+//dont work
+
 fn main() -> std::io::Result<()> {
     let socket = UdpSocket::bind("0.0.0.0:8001")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
