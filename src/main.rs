@@ -101,11 +101,11 @@ use std::time::Duration;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Cria um socket UDP que escuta no IP local e em uma porta específica
-    let local_socket = UdpSocket::bind("0.0.0.0:8080")?;
+    let local_socket = UdpSocket::bind("0.0.0.0:0")?;
     println!("Escutando no endereço: {}", local_socket.local_addr()?);
 
     // Define o endereço de destino (seu IP) para enviar a mensagem
-    let dest_addr = "170.39.119.105:8081"; // porta para onde enviar
+    let dest_addr = "170.39.119.105:8080"; // porta para onde enviar
 
     // Mensagem a ser enviada
     let message = b"testte";
