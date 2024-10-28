@@ -40,9 +40,9 @@ fn main() -> std::io::Result<()> {
 
     let ping_message = Ping::new([2_u8; 32], &keypair).expect("failed creat ping");
 
-    let message = Protocol::PingMessage(ping_message);
+    // let message = Protocol::PingMessage(ping_message);
 
-    // let message = Protocol::PullRequest(filter, value);
+    let message = Protocol::PullRequest(filter, value);
 
     let serealized = bincode::serialize(&message).expect("Failed bincode");
 
