@@ -56,15 +56,13 @@ fn main() -> std::io::Result<()> {
 fn listen_for_gossip_messages(socket: &UdpSocket) {
     let mut buf = [0u8; 1260];
 
-    loop {
-        match socket.recv_from(&mut buf) {
-            Ok((size, _src)) => {
-                println!("message recived {:?}", buf);
-                println!("message size {:?}", size);
-            }
-            Err(e) => {
-                eprintln!("Failed to receive gossip message: {}", e);
-            }
+    match socket.recv_from(&mut buf) {
+        Ok((size, _src)) => {
+            println!("message recived {:?}", buf);
+            println!("message size {:?}", size);
+        }
+        Err(e) => {
+            eprintln!("Failed to receive gossip message: {}", e);
         }
     }
 }
