@@ -34,7 +34,9 @@ fn main() -> std::io::Result<()> {
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
-    let message = Protocol::PushMessage(keypair.pubkey(), vec![value]);
+    let filter = CrdsFilter::default();
+
+    let message = Protocol::PullRequest(filter, value);
 
     let serealized = bincode::serialize(&message).expect("Failed bincode");
 
