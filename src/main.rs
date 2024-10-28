@@ -24,7 +24,7 @@ fn main() -> std::io::Result<()> {
 
     let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "35.197.53.105:8001"
+    let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
         .expect("Failed create socket testnet");
 
@@ -56,6 +56,7 @@ fn listen_for_gossip_messages(socket: &UdpSocket) {
     match socket.recv_from(&mut buf) {
         Ok((size, _src)) => {
             println!("message recived {:?}", buf);
+            println!("message size {:?}", size);
         }
         Err(e) => {
             eprintln!("Failed to receive gossip message: {}", e);
