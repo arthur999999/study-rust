@@ -19,12 +19,12 @@ use solana_sdk::{
 use solana_streamer::socket::SocketAddrSpace;
 
 fn main() -> std::io::Result<()> {
-    let socket = UdpSocket::bind("0.0.0.0:8080")?;
+    let socket = UdpSocket::bind("0.0.0.0:8001")?;
     println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
 
-    let my_ip: SocketAddr = "170.39.119.105:8080".parse().expect("Failed create my ip");
+    let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "35.203.170.30:8001"
+    let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
         .expect("Failed create socket testnet");
 
@@ -34,16 +34,13 @@ fn main() -> std::io::Result<()> {
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
-    let socket_space = SocketAddrSpace::new(false);
+    let message = Protocol::PushMessage(keypair.pubkey(), vec![value]);
 
-    let send_message = cluster_info::push_messages_to_peer(
-        vec![value],
-        keypair.pubkey(),
-        solana_addr,
-        &socket_space,
-    );
+    let serealized = bincode::serialize(&message).expect("Failed bincode");
 
-    println!("send message result {:?}", send_message);
+    let result_send = socket.send_to(&serealized, solana_addr);
+
+    println!("result send {:?}", result_send);
 
     listen_for_gossip_messages(&socket);
 
