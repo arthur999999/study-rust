@@ -31,7 +31,9 @@ fn main() -> std::io::Result<()> {
         .parse()
         .expect("Failed create socket testnet");
 
-    let keypair = Keypair::new();
+    let keypair = Keypair::from_base58_string(
+        "378KQrAsYzWLYAmhZ2s5GqFhvLx4VuH9U7WKPKp2hqiUfP3fk6gf5dYwEuThtCDx7FJ6EqriPWuAXwxPFA1q1vP9",
+    );
 
     let mut contact_info = ContactInfo::new(keypair.pubkey(), timestamp(), 0);
 
