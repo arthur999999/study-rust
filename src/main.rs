@@ -137,8 +137,8 @@ pub struct PruneData {
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct CrdsFilter {
     pub filter: Bloom<Hash>,
-    pub mask: u64,
-    pub mask_bits: u32,
+    mask: u64,
+    mask_bits: u32,
 }
 
 impl Default for CrdsFilter {
