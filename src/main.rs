@@ -20,7 +20,7 @@ use solana_sdk::{
 };
 use solana_streamer::socket::SocketAddrSpace;
 
-//dont work
+//dont work on devnet
 
 fn main() -> std::io::Result<()> {
     let socket = UdpSocket::bind("0.0.0.0:8001")?;
