@@ -1867,6 +1867,7 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "serde",
+ "solana-bloom",
  "solana-gossip",
  "solana-sdk",
  "solana-streamer",
