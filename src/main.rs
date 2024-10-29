@@ -68,11 +68,11 @@ fn main() -> std::io::Result<()> {
         }
     }
 
-    let serealized = bincode::serialize(&message2).expect("Failed bincode");
+    // let serealized = bincode::serialize(&message2).expect("Failed bincode");
 
-    let result_send = socket.send_to(&serealized, solana_addr);
+    // let result_send = socket.send_to(&serealized, solana_addr);
 
-    println!("result send {:?}", result_send);
+    // println!("result send {:?}", result_send);
 
     let recive_message = listen_for_gossip_messages(&socket);
 
