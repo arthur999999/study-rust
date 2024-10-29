@@ -41,9 +41,30 @@ fn main() -> std::io::Result<()> {
 
     let message = Protocol::PingMessage(ping_message);
 
-    // let message = Protocol::PullRequest(filter, value);
+    let filter = CrdsFilter::default();
+
+    let message2 = Protocol::PullRequest(filter, value);
 
     let serealized = bincode::serialize(&message).expect("Failed bincode");
+
+    let result_send = socket.send_to(&serealized, solana_addr);
+
+    println!("result send {:?}", result_send);
+
+    let recive_message = listen_for_gossip_messages(&socket);
+
+    match recive_message {
+        Some(message) => {
+            let protocol: Protocol = bincode::deserialize(&message).expect("Failed deserialize");
+
+            println!("Protocol {:?}", protocol);
+        }
+        None => {
+            println!("No message recived");
+        }
+    }
+
+    let serealized = bincode::serialize(&message2).expect("Failed bincode");
 
     let result_send = socket.send_to(&serealized, solana_addr);
 
