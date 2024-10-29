@@ -81,6 +81,37 @@ fn main() -> std::io::Result<()> {
             let protocol: Protocol = bincode::deserialize(&message).expect("Failed deserialize");
 
             println!("Protocol {:?}", protocol);
+
+            match protocol {
+                Protocol::PullRequest(crds_filter, crds_value) => (),
+                Protocol::PullResponse(pubkey, vec) => (),
+                Protocol::PushMessage(pubkey, vec) => (),
+                Protocol::PruneMessage(pubkey, prune_data) => (),
+                Protocol::PingMessage(ping) => {
+                    let pong_message = Pong::new(&ping, &keypair).expect("failed creat pong");
+                    let serealized = bincode::serialize(&Protocol::PongMessage(pong_message))
+                        .expect("Failed bincode");
+
+                    let result_send = socket.send_to(&serealized, solana_addr);
+
+                    println!("result send {:?}", result_send);
+
+                    let recive_message = listen_for_gossip_messages(&socket);
+
+                    match recive_message {
+                        Some(message) => {
+                            let protocol: Protocol =
+                                bincode::deserialize(&message).expect("Failed deserialize");
+
+                            println!("Protocol {:?}", protocol);
+                        }
+                        None => {
+                            println!("No message recived");
+                        }
+                    }
+                }
+                Protocol::PongMessage(pong) => (),
+            }
         }
         None => {
             println!("No message recived");
