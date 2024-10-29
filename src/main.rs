@@ -36,6 +36,7 @@ fn main() -> std::io::Result<()> {
     );
 
     let mut contact_info = ContactInfo::new(keypair.pubkey(), timestamp(), 0);
+    contact_info.set_gossip(my_ip);
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
