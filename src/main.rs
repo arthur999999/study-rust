@@ -33,9 +33,7 @@ fn main() -> std::io::Result<()> {
 
     let keypair = Keypair::new();
 
-    let mut contact_info = ContactInfo::new(keypair.pubkey(), timestamp(), 0);
-    let set_gossip = contact_info.set_gossip(my_ip);
-    println!("set gossip result{:?}", set_gossip);
+    let contact_info = ContactInfo::new_gossip_entry_point(&my_ip);
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
