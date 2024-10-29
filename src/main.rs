@@ -34,11 +34,8 @@ fn main() -> std::io::Result<()> {
     let keypair = Keypair::new();
 
     let mut contact_info = ContactInfo::new(keypair.pubkey(), timestamp(), 0);
-    let set_gossip = contact_info.set_gossip(my_ip);
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
-
-    let filter = CrdsFilter::default();
 
     let ping_message = Ping::new([2_u8; 32], &keypair).expect("failed creat ping");
 
