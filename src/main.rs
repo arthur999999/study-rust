@@ -99,6 +99,7 @@ async fn send_pong(socket: &UdpSocket, keypair: &Keypair, nodes: Arc<Mutex<Vec<S
                             drop(unlock);
                         } else {
                             unlock.push(src.to_string());
+                            println!("nodes in array {}", unlock.len());
                             drop(unlock);
                         }
                         let pong = Pong::new(&ping, keypair).expect("Failed create pong");
