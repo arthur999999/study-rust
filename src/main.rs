@@ -6,6 +6,7 @@ use std::{
     time::Duration,
 };
 
+use chrono::Local;
 use serde::{Deserialize, Serialize};
 use solana_bloom::bloom::Bloom;
 use solana_gossip::{
@@ -53,7 +54,7 @@ async fn main() {
 
     let keypair_clone = keypair.insecure_clone();
 
-    let mut nodes = Arc::new(Mutex::new(vec!["".to_string()]));
+    let mut nodes = Arc::new(Mutex::new(HashMap::new()));
 
     tokio::spawn(async move {
         handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
@@ -77,7 +78,11 @@ async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketA
     }
 }
 
-async fn send_pong(socket: &UdpSocket, keypair: &Keypair, nodes: Arc<Mutex<Vec<String>>>) {
+async fn send_pong(
+    socket: &UdpSocket,
+    keypair: &Keypair,
+    nodes: Arc<Mutex<HashMap<String, Vec<String>>>>,
+) {
     loop {
         let protocol = listen_for_gossip_messages(socket);
         match protocol {
@@ -92,13 +97,19 @@ async fn send_pong(socket: &UdpSocket, keypair: &Keypair, nodes: Arc<Mutex<Vec<S
                     Protocol::PushMessage(pubkey, vec) => (),
                     Protocol::PruneMessage(pubkey, prune_data) => (),
                     Protocol::PingMessage(ping) => {
+                        let now = Local::now().format("%H:%M:%S").to_string();
                         let mut unlock = nodes.lock().await;
-                        if unlock.contains(&src.to_string()) {
+                        if let Some(node) = unlock.clone().get(&src.to_string()) {
+                            let mut new_array = node.clone();
+                            new_array.push(now);
+                            unlock.insert(src.to_string(), new_array);
+                            drop(unlock);
                             println!("PING FROM THE SAME NODE!!!!!!");
                             println!("IP: {:?}", src);
-                            drop(unlock);
+                            println!("\n times \n\n {:?}", node);
                         } else {
-                            unlock.push(src.to_string());
+                            let new_vec = vec![now];
+                            unlock.insert(src.to_string(), new_vec);
                             println!("nodes in array {}", unlock.len());
                             drop(unlock);
                         }
