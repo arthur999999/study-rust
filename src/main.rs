@@ -93,7 +93,7 @@ fn send_pong(socket: &UdpSocket, keypair: &Keypair) {
 
                         let result_send = socket.send_to(&serealized, src);
 
-                        println!("result send {:?}", result_send);
+                        println!("pong sent {:?}", result_send);
                     }
                     Protocol::PongMessage(pong) => (),
                 }
