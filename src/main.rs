@@ -34,7 +34,7 @@ async fn main() {
 
     let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "35.197.53.105:8001"
+    let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
         .expect("Failed create socket testnet");
 
