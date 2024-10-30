@@ -108,8 +108,8 @@ fn listen_for_gossip_messages(socket: &UdpSocket) -> Option<(Vec<u8>, SocketAddr
 
     match socket.recv_from(&mut buf) {
         Ok((size, src)) => {
-            println!("message recived {:?}", buf);
-            println!("message size {:?}", size);
+            println!("message recived from {:?}", src);
+
             return Some((buf[..size].to_vec(), src));
         }
         Err(e) => {
