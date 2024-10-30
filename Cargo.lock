@@ -1871,6 +1871,7 @@ dependencies = [
  "solana-gossip",
  "solana-sdk",
  "solana-streamer",
+ "tokio",
 ]
 
 [[package]]

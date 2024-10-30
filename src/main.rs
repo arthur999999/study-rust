@@ -1,6 +1,7 @@
 use std::{
     io,
     net::{SocketAddr, UdpSocket},
+    time::Duration,
 };
 
 use serde::{Deserialize, Serialize};
@@ -19,12 +20,17 @@ use solana_sdk::{
     timing::timestamp,
 };
 use solana_streamer::socket::SocketAddrSpace;
+use tokio::time::sleep;
 
 //dont work
 
-fn main() -> std::io::Result<()> {
-    let socket = UdpSocket::bind("0.0.0.0:8001")?;
-    println!("Socket UDP criado e vinculado a: {}", socket.local_addr()?);
+#[tokio::main]
+async fn main() {
+    let socket = UdpSocket::bind("0.0.0.0:8001").expect("Failed create UdpSocket");
+    println!(
+        "Socket UDP criado e vinculado a: {}",
+        socket.local_addr().expect("failed local ip")
+    );
 
     let my_ip: SocketAddr = "170.39.119.105:8001".parse().expect("Failed create my ip");
 
@@ -41,94 +47,70 @@ fn main() -> std::io::Result<()> {
 
     let value = CrdsValue::new_signed(CrdsData::ContactInfo(contact_info), &keypair);
 
-    let ping_message = Ping::new([2_u8; 32], &keypair).expect("failed creat ping");
+    let socket_clone = socket.try_clone().expect("Failed Clone socket");
+
+    let keypair_clone = keypair.insecure_clone();
+
+    tokio::spawn(async move {
+        handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
+    });
+
+    send_pong(&socket, &keypair);
+}
+
+async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
+    let ping_message = Ping::new([2_u8; 32], keypair).expect("failed creat ping");
 
     let message = Protocol::PingMessage(ping_message);
 
-    let filter = CrdsFilter::default();
-
-    let message2 = Protocol::PullRequest(filter, value);
-
     let serealized = bincode::serialize(&message).expect("Failed bincode");
 
-    let result_send = socket.send_to(&serealized, solana_addr);
-
-    println!("result send {:?}", result_send);
-
-    let recive_message = listen_for_gossip_messages(&socket);
-
-    match recive_message {
-        Some(message) => {
-            let protocol: Protocol = bincode::deserialize(&message).expect("Failed deserialize");
-
-            println!("Protocol {:?}", protocol);
-        }
-        None => {
-            println!("No message recived");
-        }
+    loop {
+        let result_send = socket.send_to(&serealized, solana_addr);
+        println!("Ping Sent {:?}", result_send);
+        sleep(Duration::from_secs(20)).await;
     }
-
-    let serealized = bincode::serialize(&message2).expect("Failed bincode");
-
-    let result_send = socket.send_to(&serealized, solana_addr);
-
-    println!("result send {:?}", result_send);
-
-    let recive_message = listen_for_gossip_messages(&socket);
-
-    match recive_message {
-        Some(message) => {
-            let protocol: Protocol = bincode::deserialize(&message).expect("Failed deserialize");
-
-            println!("Protocol {:?}", protocol);
-
-            match protocol {
-                Protocol::PullRequest(crds_filter, crds_value) => (),
-                Protocol::PullResponse(pubkey, vec) => (),
-                Protocol::PushMessage(pubkey, vec) => (),
-                Protocol::PruneMessage(pubkey, prune_data) => (),
-                Protocol::PingMessage(ping) => {
-                    let pong_message = Pong::new(&ping, &keypair).expect("failed creat pong");
-                    let serealized = bincode::serialize(&Protocol::PongMessage(pong_message))
-                        .expect("Failed bincode");
-
-                    let result_send = socket.send_to(&serealized, solana_addr);
-
-                    println!("result send {:?}", result_send);
-
-                    let recive_message = listen_for_gossip_messages(&socket);
-
-                    match recive_message {
-                        Some(message) => {
-                            let protocol: Protocol =
-                                bincode::deserialize(&message).expect("Failed deserialize");
-
-                            println!("Protocol {:?}", protocol);
-                        }
-                        None => {
-                            println!("No message recived");
-                        }
-                    }
-                }
-                Protocol::PongMessage(pong) => (),
-            }
-        }
-        None => {
-            println!("No message recived");
-        }
-    }
-
-    Ok(())
 }
 
-fn listen_for_gossip_messages(socket: &UdpSocket) -> Option<Vec<u8>> {
+fn send_pong(socket: &UdpSocket, keypair: &Keypair) {
+    loop {
+        let protocol = listen_for_gossip_messages(socket);
+        match protocol {
+            Some((message, src)) => {
+                let protocol: Protocol =
+                    bincode::deserialize(&message).expect("Failed deserialize");
+
+                println!("Message Received {:?}", protocol);
+                match protocol {
+                    Protocol::PullRequest(crds_filter, crds_value) => (),
+                    Protocol::PullResponse(pubkey, vec) => (),
+                    Protocol::PushMessage(pubkey, vec) => (),
+                    Protocol::PruneMessage(pubkey, prune_data) => (),
+                    Protocol::PingMessage(ping) => {
+                        let pong = Pong::new(&ping, keypair).expect("Failed create pong");
+                        let serealized = bincode::serialize(&Protocol::PongMessage(pong))
+                            .expect("Failed bincode");
+
+                        let result_send = socket.send_to(&serealized, src);
+
+                        println!("result send {:?}", result_send);
+                    }
+                    Protocol::PongMessage(pong) => (),
+                }
+            }
+            None => (),
+        }
+    }
+}
+
+fn listen_for_gossip_messages(socket: &UdpSocket) -> Option<(Vec<u8>, SocketAddr)> {
     let mut buf = [0u8; 1260];
 
     match socket.recv_from(&mut buf) {
-        Ok((size, _src)) => {
+        Ok((size, src)) => {
             println!("message recived {:?}", buf);
             println!("message size {:?}", size);
-            return Some(buf[..size].to_vec());
+            return Some((buf[..size].to_vec(), src));
         }
         Err(e) => {
             eprintln!("Failed to receive gossip message: {}", e);
