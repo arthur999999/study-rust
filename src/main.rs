@@ -65,9 +65,10 @@ async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketA
 
     let serealized = bincode::serialize(&message).expect("Failed bincode");
 
+    let result_send = socket.send_to(&serealized, solana_addr);
+    println!("Ping Sent {:?}", result_send);
+
     loop {
-        let result_send = socket.send_to(&serealized, solana_addr);
-        println!("Ping Sent {:?}", result_send);
         sleep(Duration::from_secs(20)).await;
     }
 }
