@@ -1,6 +1,8 @@
 use std::{
+    collections::HashMap,
     io,
     net::{SocketAddr, UdpSocket},
+    sync::Arc,
     time::Duration,
 };
 
@@ -20,7 +22,7 @@ use solana_sdk::{
     timing::timestamp,
 };
 use solana_streamer::socket::SocketAddrSpace;
-use tokio::time::sleep;
+use tokio::{sync::Mutex, time::sleep};
 
 //dont work
 
@@ -51,11 +53,13 @@ async fn main() {
 
     let keypair_clone = keypair.insecure_clone();
 
+    let mut nodes = Arc::new(Mutex::new(vec!["".to_string()]));
+
     tokio::spawn(async move {
         handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
     });
 
-    send_pong(&socket, &keypair);
+    send_pong(&socket, &keypair, nodes);
 }
 
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
@@ -73,7 +77,7 @@ async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketA
     }
 }
 
-fn send_pong(socket: &UdpSocket, keypair: &Keypair) {
+async fn send_pong(socket: &UdpSocket, keypair: &Keypair, nodes: Arc<Mutex<Vec<String>>>) {
     loop {
         let protocol = listen_for_gossip_messages(socket);
         match protocol {
@@ -88,6 +92,15 @@ fn send_pong(socket: &UdpSocket, keypair: &Keypair) {
                     Protocol::PushMessage(pubkey, vec) => (),
                     Protocol::PruneMessage(pubkey, prune_data) => (),
                     Protocol::PingMessage(ping) => {
+                        let mut unlock = nodes.lock().await;
+                        if unlock.contains(&src.to_string()) {
+                            println!("PING FROM THE SAME NODE!!!!!!");
+                            println!("IP: {:?}", src);
+                            drop(unlock);
+                        } else {
+                            unlock.push(src.to_string());
+                            drop(unlock);
+                        }
                         let pong = Pong::new(&ping, keypair).expect("Failed create pong");
                         let serealized = bincode::serialize(&Protocol::PongMessage(pong))
                             .expect("Failed bincode");
