@@ -59,7 +59,7 @@ async fn main() {
         handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
     });
 
-    send_pong(&socket, &keypair, nodes);
+    let _zap = send_pong(&socket, &keypair, nodes).await;
 }
 
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
