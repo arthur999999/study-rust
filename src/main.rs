@@ -102,11 +102,11 @@ async fn send_pong(
                         if let Some(node) = unlock.clone().get(&src.to_string()) {
                             let mut new_array = node.clone();
                             new_array.push(now);
-                            unlock.insert(src.to_string(), new_array);
+                            unlock.insert(src.to_string(), new_array.clone());
                             drop(unlock);
                             println!("PING FROM THE SAME NODE!!!!!!");
                             println!("IP: {:?}", src);
-                            println!("\n times \n\n {:?}", node);
+                            println!("\n times \n\n {:?}", new_array);
                         } else {
                             let new_vec = vec![now];
                             unlock.insert(src.to_string(), new_vec);
