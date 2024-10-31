@@ -73,8 +73,9 @@ async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: So
     let filter = CrdsFilter::default();
     let pull_request = Protocol::PullRequest(filter, value);
     let messsage = bincode::serialize(&pull_request).expect("Failed serealize pull");
-    let result = socket.send_to(&messsage, solana_addr);
+
     loop {
+        let result = socket.send_to(&messsage, solana_addr);
         println!("Send Pull Request {:?}", result);
         sleep(Duration::from_secs(60)).await;
     }
