@@ -63,22 +63,19 @@ async fn main() {
     let socket_clone_2 = socket.try_clone().expect("Failed clone socket");
 
     tokio::spawn(async move {
-        send_pull_request(value, &socket_clone_2, solana_addr).await;
+        send_pull_request(value, &socket_clone_2, solana_addr);
     });
 
     let _zap = send_pong(&socket, &keypair, nodes).await;
 }
 
-async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: SocketAddr) {
+fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: SocketAddr) {
     let filter = CrdsFilter::default();
     let pull_request = Protocol::PullRequest(filter, value);
     let messsage = bincode::serialize(&pull_request).expect("Failed serealize pull");
 
-    loop {
-        let result = socket.send_to(&messsage, solana_addr);
-        println!("Send Pull Request {:?}", result);
-        sleep(Duration::from_secs(60)).await;
-    }
+    let result = socket.send_to(&messsage, solana_addr);
+    println!("Send Pull Request {:?}", result);
 }
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
     let ping_message = Ping::new([2_u8; 32], keypair).expect("failed creat ping");
