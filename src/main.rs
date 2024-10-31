@@ -216,7 +216,7 @@ impl Default for CrdsFilter {
         }
 
         let max_items: u32 = 1287;
-        let num_items: u32 = 512;
+        let num_items: u32 = 10;
         let false_rate: f64 = 0.1f64;
         let max_bits = 7424u32;
         let mask_bits = mask_bits(f64::from(num_items), f64::from(max_items));
