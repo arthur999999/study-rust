@@ -29,15 +29,15 @@ use tokio::{sync::Mutex, time::sleep};
 
 #[tokio::main]
 async fn main() {
-    let socket = UdpSocket::bind("0.0.0.0:8003").expect("Failed create UdpSocket");
+    let socket = UdpSocket::bind("0.0.0.0:8100").expect("Failed create UdpSocket");
     println!(
         "Socket UDP criado e vinculado a: {}",
         socket.local_addr().expect("failed local ip")
     );
 
-    let my_ip: SocketAddr = "170.39.119.105:8003".parse().expect("Failed create my ip");
+    let my_ip: SocketAddr = "170.39.119.105:8100".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "35.197.53.105:8001"
+    let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
         .expect("Failed create socket testnet");
 
