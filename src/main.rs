@@ -215,8 +215,8 @@ impl Default for CrdsFilter {
             ((num_items / max_items).log2().ceil()).max(0.0) as u32
         }
 
-        let max_items: u32 = 100;
-        let num_items: u32 = 10;
+        let max_items: u32 = 576;
+        let num_items: u32 = 234;
         let false_rate: f64 = 0.1f64;
         let max_bits = 7424u32;
         let mask_bits = mask_bits(f64::from(num_items), f64::from(max_items));
@@ -225,7 +225,7 @@ impl Default for CrdsFilter {
 
         CrdsFilter {
             filter: bloom,
-            mask: compute_mask(1_u64, mask_bits),
+            mask: compute_mask(0_u64, mask_bits),
             mask_bits,
         }
     }
