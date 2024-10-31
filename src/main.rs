@@ -215,13 +215,13 @@ impl Default for CrdsFilter {
             ((num_items / max_items).log2().ceil()).max(0.0) as u32
         }
 
-        let max_items: u32 = 700;
-        let num_items: u32 = 300;
+        let max_items: u32 = 1500;
+        let num_items: u32 = 1000;
         let false_rate: f64 = 0.1f64;
-        let max_bits = 7424u32;
+        let max_bits = 928u32;
         let mask_bits = mask_bits(f64::from(num_items), f64::from(max_items));
 
-        let bloom: Bloom<Hash> = Bloom::random(max_items as usize, false_rate, max_bits as usize);
+        let bloom: Bloom<Hash> = Bloom::random(num_items as usize, false_rate, max_bits as usize);
 
         CrdsFilter {
             filter: bloom,
