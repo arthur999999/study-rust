@@ -77,7 +77,7 @@ async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: So
     loop {
         let result = socket.send_to(&messsage, solana_addr);
         println!("Send Pull Request {:?}", result);
-        sleep(Duration::from_secs(60)).await;
+        sleep(Duration::from_secs(120)).await;
     }
 }
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
@@ -215,8 +215,8 @@ impl Default for CrdsFilter {
             ((num_items / max_items).log2().ceil()).max(0.0) as u32
         }
 
-        let max_items: u32 = 200;
-        let num_items: u32 = 30;
+        let max_items: u32 = 100;
+        let num_items: u32 = 10;
         let false_rate: f64 = 0.1f64;
         let max_bits = 7424u32;
         let mask_bits = mask_bits(f64::from(num_items), f64::from(max_items));
@@ -225,7 +225,7 @@ impl Default for CrdsFilter {
 
         CrdsFilter {
             filter: bloom,
-            mask: compute_mask(0_u64, mask_bits),
+            mask: compute_mask(1_u64, mask_bits),
             mask_bits,
         }
     }
