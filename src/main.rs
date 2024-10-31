@@ -54,11 +54,11 @@ async fn main() {
 
     let keypair_clone = keypair.insecure_clone();
 
-    let mut nodes = Arc::new(Mutex::new(HashMap::new()));
+    let nodes = Arc::new(Mutex::new(HashMap::new()));
 
-    tokio::spawn(async move {
-        handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
-    });
+    // tokio::spawn(async move {
+    //     handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
+    // });
 
     let _zap = send_pong(&socket, &keypair, nodes).await;
 }
