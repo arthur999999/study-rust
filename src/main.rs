@@ -63,19 +63,22 @@ async fn main() {
     let socket_clone_2 = socket.try_clone().expect("Failed clone socket");
 
     tokio::spawn(async move {
-        send_pull_request(value, &socket_clone_2, solana_addr);
+        send_pull_request(value, &socket_clone_2, solana_addr).await;
     });
 
     let _zap = send_pong(&socket, &keypair, nodes).await;
 }
 
-fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: SocketAddr) {
+async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: SocketAddr) {
     let filter = CrdsFilter::default();
     let pull_request = Protocol::PullRequest(filter, value);
     let messsage = bincode::serialize(&pull_request).expect("Failed serealize pull");
 
-    let result = socket.send_to(&messsage, solana_addr);
-    println!("Send Pull Request {:?}", result);
+    loop {
+        let result = socket.send_to(&messsage, solana_addr);
+        println!("Send Pull Request {:?}", result);
+        sleep(Duration::from_secs(60)).await;
+    }
 }
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
     let ping_message = Ping::new([2_u8; 32], keypair).expect("failed creat ping");
@@ -213,7 +216,7 @@ impl Default for CrdsFilter {
         }
 
         let max_items: u32 = 1287;
-        let num_items: u32 = 10;
+        let num_items: u32 = 1;
         let false_rate: f64 = 0.1f64;
         let max_bits = 7424u32;
         let mask_bits = mask_bits(f64::from(num_items), f64::from(max_items));
