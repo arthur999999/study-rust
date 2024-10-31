@@ -35,9 +35,9 @@ async fn main() {
         socket.local_addr().expect("failed local ip")
     );
 
-    let my_ip: SocketAddr = "35.197.53.105:8001".parse().expect("Failed create my ip");
+    let my_ip: SocketAddr = "170.39.119.105:8003".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "35.197.53.105:8001"
+    let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
         .expect("Failed create socket testnet");
 
@@ -60,9 +60,25 @@ async fn main() {
         handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
     });
 
+    let socket_clone_2 = socket.try_clone().expect("Failed clone socket");
+
+    tokio::spawn(async move {
+        send_pull_request(value, &socket_clone_2, solana_addr).await;
+    });
+
     let _zap = send_pong(&socket, &keypair, nodes).await;
 }
 
+async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: SocketAddr) {
+    let filter = CrdsFilter::default();
+    let pull_request = Protocol::PullRequest(filter, value);
+    let messsage = bincode::serialize(&pull_request).expect("Failed serealize pull");
+    let result = socket.send_to(&messsage, solana_addr);
+    loop {
+        println!("Send Pull Request {:?}", result);
+        sleep(Duration::from_secs(60)).await;
+    }
+}
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
     let ping_message = Ping::new([2_u8; 32], keypair).expect("failed creat ping");
 
