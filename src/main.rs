@@ -77,7 +77,7 @@ async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: So
     loop {
         let result = socket.send_to(&messsage, solana_addr);
         println!("Send Pull Request {:?}", result);
-        sleep(Duration::from_secs(120)).await;
+        sleep(Duration::from_secs(60)).await;
     }
 }
 async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
