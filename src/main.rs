@@ -37,7 +37,7 @@ async fn main() {
 
     let my_ip: SocketAddr = "170.39.119.105:8100".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "34.83.231.102:8000"
+    let solana_addr: SocketAddr = "34.83.231.102:8001"
         .parse()
         .expect("Failed create socket testnet");
 
@@ -92,11 +92,13 @@ async fn send_pull_request(
                 if i == number_node {
                     dest = node.parse().expect("Failed to create socket adrress");
                     number_node += 1;
-                    drop(nodes_list);
+
                     break;
                 }
             }
         }
+        drop(nodes_list);
+
         let result = socket.send_to(&messsage, dest);
         println!("Send Pull Request {:?}", result);
         sleep(Duration::from_secs(60)).await;
