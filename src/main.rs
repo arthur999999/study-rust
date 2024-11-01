@@ -37,7 +37,7 @@ async fn main() {
 
     let my_ip: SocketAddr = "170.39.119.105:8100".parse().expect("Failed create my ip");
 
-    let solana_addr: SocketAddr = "185.209.179.165:8000"
+    let solana_addr: SocketAddr = "34.83.231.102:8000"
         .parse()
         .expect("Failed create socket testnet");
 
@@ -56,31 +56,58 @@ async fn main() {
 
     let nodes = Arc::new(Mutex::new(HashMap::new()));
 
+    let nodes_cloned = Arc::clone(&nodes);
+
     tokio::spawn(async move {
-        handle_ping(&keypair_clone, &socket_clone, solana_addr).await;
+        handle_ping(&keypair_clone, &socket_clone, solana_addr, nodes_cloned).await;
     });
 
     let socket_clone_2 = socket.try_clone().expect("Failed clone socket");
 
+    let nodes_clone = Arc::clone(&nodes);
+
     tokio::spawn(async move {
-        send_pull_request(value, &socket_clone_2, solana_addr).await;
+        send_pull_request(value, &socket_clone_2, solana_addr, nodes_clone).await;
     });
 
     let _zap = send_pong(&socket, &keypair, nodes).await;
 }
 
-async fn send_pull_request(value: CrdsValue, socket: &UdpSocket, solana_addr: SocketAddr) {
+async fn send_pull_request(
+    value: CrdsValue,
+    socket: &UdpSocket,
+    solana_addr: SocketAddr,
+    nodes: Arc<Mutex<HashMap<String, Vec<String>>>>,
+) {
     let filter = CrdsFilter::default();
     let pull_request = Protocol::PullRequest(filter, value);
     let messsage = bincode::serialize(&pull_request).expect("Failed serealize pull");
+    let mut number_node = 1;
 
     loop {
-        let result = socket.send_to(&messsage, solana_addr);
+        let mut dest = solana_addr;
+        let nodes_list = nodes.lock().await;
+        if nodes_list.len() > 1 {
+            for (i, (node, _)) in nodes_list.clone().into_iter().enumerate() {
+                if i == number_node {
+                    dest = node.parse().expect("Failed to create socket adrress");
+                    number_node += 1;
+                    drop(nodes_list);
+                    break;
+                }
+            }
+        }
+        let result = socket.send_to(&messsage, dest);
         println!("Send Pull Request {:?}", result);
         sleep(Duration::from_secs(60)).await;
     }
 }
-async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketAddr) {
+async fn handle_ping(
+    keypair: &Keypair,
+    socket: &UdpSocket,
+    solana_addr: SocketAddr,
+    nodes: Arc<Mutex<HashMap<String, Vec<String>>>>,
+) {
     let ping_message = Ping::new([2_u8; 32], keypair).expect("failed creat ping");
 
     let message = Protocol::PingMessage(ping_message);
@@ -90,6 +117,12 @@ async fn handle_ping(keypair: &Keypair, socket: &UdpSocket, solana_addr: SocketA
     loop {
         let result_send = socket.send_to(&serealized, solana_addr);
         println!("Ping Sent {:?}", result_send);
+        let nodes_unlock = nodes.lock().await;
+        for (addr, _) in nodes_unlock.clone().into_iter() {
+            let dest: SocketAddr = addr.parse().expect("Failed to parse to ping");
+            let result_send = socket.send_to(&serealized, dest);
+            println!("Ping Sent {:?}", result_send);
+        }
         sleep(Duration::from_secs(240)).await;
     }
 }
